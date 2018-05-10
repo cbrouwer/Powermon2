@@ -18,3 +18,10 @@
 .App-intro {
   font-size: large;
 }
+
+.Consumption-pos {
+  color: red;
+}
+.Consumption-neg {
+  color: green;
+}
