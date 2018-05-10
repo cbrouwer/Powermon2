@@ -10,6 +10,16 @@ class Dashboard extends Component {
     super(props);
     this.state = {text: 'Button', monthData: [], current: '', currentTs: Moment()};
     this.processData = this.processData.bind(this);
+
+    this.getCurrentData();
+    var context = this;
+    this.requestLoop = setInterval(function(){
+      context.getCurrentData();
+    }, 10000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.requestLoop);
   }
 
   componentDidMount() {
@@ -21,6 +31,10 @@ class Dashboard extends Component {
       .catch(function (error) {
         console.log(error);
       });
+  }
+
+ getCurrentData() {
+    var context = this;
 
     axios.get('/api/current')
       .then(function (response) {
@@ -33,7 +47,6 @@ class Dashboard extends Component {
         console.log(error);
       });
   }
-
 
 
   processData(data) {
