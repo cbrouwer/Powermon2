@@ -1,0 +1,29 @@
+{
+  "name": "powermon2",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axiom": "^0.1.6",
+    "axios": "^0.18.0",
+    "bootstrap": "^4.1.1",
+    "concurrently": "^3.5.1",
+    "express": "^4.16.3",
+    "moment": "^2.22.1",
+    "mongodb": "^3.0.8",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-moment": "^0.7.0",
+    "react-redux": "^5.0.7",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.1.4",
+    "reactstrap": "^6.0.1"
+  },
+  "scripts": {
+    "start": "concurrently --kill-others \"node src/server.js\" \"react-scripts start\"",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:5000"
+}
