@@ -11,10 +11,9 @@ class Dashboard extends Component {
     this.state = {text: 'Button', monthData: [], current: '', currentTs: Moment()};
     this.processData = this.processData.bind(this);
 
-    this.getCurrentData();
     var context = this;
     this.requestLoop = setInterval(function(){
-      context.getCurrentData();
+      context.getCurrentConsumption();
     }, 10000);
   }
 
@@ -24,6 +23,8 @@ class Dashboard extends Component {
 
   componentDidMount() {
     var context = this;
+    this.getCurrentConsumption();
+
     axios.get('/api/months')
       .then(function (response) {
         context.processData(response.data.docs);
@@ -31,16 +32,24 @@ class Dashboard extends Component {
       .catch(function (error) {
         console.log(error);
       });
+
+    axios.get('/api/currentMonth')
+      .then(function (response) {
+        context.setState({currentMonth: {d_total: response.data.d_total, date: Moment()}});
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 
- getCurrentData() {
+ getCurrentConsumption() {
     var context = this;
 
     axios.get('/api/current')
       .then(function (response) {
         context.setState({
             current: response.data.consumption,
-            currentTs: Moment(response.data.date)});
+            currentTs: Moment(response.data.ts)});
 
       })
       .catch(function (error) {
@@ -66,17 +75,28 @@ class Dashboard extends Component {
   }
 
 
-  formatKwhNumber(number,precision=0) {
+  formatNumber(number,precision=0,unit='Kwh') {
     if (!number) return '-'
-    return number.toFixed(precision)  + ' kWh';
+    return number.toFixed(precision)  + ' ' + unit;
   }
   formatDiffKwhNumber(number) {
     if (!number) return <div>-</div>
     const className = number > -1 ? 'Consumption-pos' : 'Consumption-neg';
-    return <div className={className}> {this.formatKwhNumber(number)} </div>
+    return <div className={className}> {this.formatNumber(number)} </div>
   }
 
-  getTableData() {
+  getCurrentMonthRow() {
+    if (this.state.currentMonth) {
+      return (<tr key='current'>
+        <th scope="row">{this.state.currentMonth.date.format('MMMM Y')}</th>
+        <td>{this.formatNumber(this.state.currentMonth.d_total)}</td>
+        <td>-</td>
+        <td>-</td>
+      </tr>);
+    }
+    return (<tr></tr>);
+  }
+  getTableRows() {
     var context = this;
     return Object.keys(this.state.monthData).sort().reverse().map(function(key, index) {
       const elem = context.state.monthData[key];
@@ -93,7 +113,7 @@ class Dashboard extends Component {
 
       return (<tr key={key}>
         <th scope="row">{elem.date.format('MMMM Y')}</th>
-        <td>{context.formatKwhNumber(elem.d_total)}</td>
+        <td>{context.formatNumber(elem.d_total)}</td>
         <td>{context.formatDiffKwhNumber(lastMonthDiff)}</td>
         <td>{context.formatDiffKwhNumber(lastYearDiff)}</td>
       </tr>);
@@ -106,7 +126,7 @@ class Dashboard extends Component {
     return (
       <div>
       <Alert color="primary">
-        {this.formatKwhNumber(this.state.current, 3)} @ {this.state.currentTs.format('HH:mm:ss')}
+        {this.formatNumber(this.state.current, 3, 'kW')} @ {this.state.currentTs.format('HH:mm:ss')}
       </Alert>
 
       <Table>
@@ -119,7 +139,9 @@ class Dashboard extends Component {
          </tr>
        </thead>
        <tbody>
-       {this.getTableData()}
+
+       {this.getCurrentMonthRow()}
+       {this.getTableRows()}
        </tbody>
      </Table>
      </div>
